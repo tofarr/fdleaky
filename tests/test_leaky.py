@@ -3,12 +3,12 @@ import socket
 import tempfile
 import time
 
-from leaky.fd_tracker import FDS, UNCLOSED_TIMEOUT
+from leaky.leaky import FDS, UNCLOSED_TIMEOUT
 
 
 def test_file_tracking():
     os.environ['DEBUG'] = '1'
-    import leaky.fd_tracker  # noqa
+    import leaky.leaky  # noqa
 
     # Test file tracking
     with tempfile.NamedTemporaryFile() as f:
@@ -19,7 +19,7 @@ def test_file_tracking():
 
 def test_socket_tracking():
     os.environ['DEBUG'] = '1'
-    import leaky.fd_tracker  # noqa
+    import leaky.leaky  # noqa
 
     # Test socket tracking
     sock = socket.socket()
@@ -31,7 +31,7 @@ def test_socket_tracking():
 
 def test_unclosed_detection():
     os.environ['DEBUG'] = '1'
-    import leaky.fd_tracker  # noqa
+    import leaky.leaky  # noqa
 
     # Create an unclosed file
     f = tempfile.NamedTemporaryFile()

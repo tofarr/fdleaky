@@ -1,6 +1,5 @@
 import builtins
 import logging
-import os
 import socket
 import time
 import traceback
@@ -96,7 +95,7 @@ def run():
         print_error('UNCLOSED', fd.stack)
 
 
-if os.environ.get('DEBUG') == '1':
+def patch_fds():
     builtins.open = patched_open
     socket.socket.__init__ = patched_init  # type: ignore
     socket.socket.close = patched_close  # type: ignore
