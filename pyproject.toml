@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "leaky"
+version = "0.0.1"
+description = "A Python project template"
+authors = ["tofarr <tofarr@gmail.com>"]
+readme = "README.md"
+packages = [{include = "leaky"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+black = "^23.7.0"
+pylint = "^2.17.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.pytest.ini_options]
+addopts = "--cov=leaky --cov-report=term-missing"
+testpaths = ["tests"]
