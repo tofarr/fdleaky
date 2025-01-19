@@ -25,8 +25,7 @@ INTERVAL = 15
 def get_self(args, kwargs):
     if len(args) >= 1:
         return args[0]
-    else:
-        return kwargs['self']
+    return kwargs["self"]
 
 
 original_open = builtins.open
@@ -37,24 +36,28 @@ original_detach = socket.socket.detach
 logger = logging.getLogger(__name__)
 
 
-def print_error(msg: str, traceback: list[str]):
-    output = [f'\n===== {msg} =====\n']
-    output.extend(traceback[:-1])
-    logger.error(''.join(output))
+def print_error(msg: str, stack_trace: list[str]):
+    output = [f"\n===== {msg} =====\n"]
+    output.extend(stack_trace[:-1])
+    logger.error("".join(output))
 
 
 def patched_open(*args, **kwargs):
+    print("patched_open called with:", args, kwargs)  # Debug print
     file_obj = original_open(*args, **kwargs)
     id_ = id(file_obj)
-    original_close = file_obj.close
+    file_close = file_obj.close
+    print("Created file object:", file_obj, "with id:", id_)  # Debug print
 
-    def patched_close(*args, **kwargs):
+    def patched_file_close(*args, **kwargs):
+        print("patched_file_close called for id:", id_)  # Debug print
         FDS.pop(id_, None)
-        result = original_close(*args, **kwargs)
+        result = file_close(*args, **kwargs)
         return result
 
-    file_obj.close = patched_close
+    file_obj.close = patched_file_close
     FDS[id_] = FD(file_obj, traceback.format_stack())
+    print("Added to FDS:", id_, FDS)  # Debug print
     return file_obj
 
 
@@ -89,14 +92,17 @@ def run():
         for id_, fd in list(FDS.items()):
             if fd.created_at < threshold:
                 FDS.pop(id_)
-                print_error('UNCLOSED', fd.stack)
+                print_error("UNCLOSED", fd.stack)
 
     for fd in FDS.values():
-        print_error('UNCLOSED', fd.stack)
+        print_error("UNCLOSED", fd.stack)
 
 
 def patch_fds():
+    import _io
+
     builtins.open = patched_open
+    _io.open = patched_open  # Also patch _io.open for tempfile module
     socket.socket.__init__ = patched_init  # type: ignore
     socket.socket.close = patched_close  # type: ignore
     socket.socket.detach = patched_detach  # type: ignore
