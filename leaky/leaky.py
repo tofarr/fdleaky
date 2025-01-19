@@ -26,7 +26,7 @@ def get_self(args, kwargs):
     if len(args) >= 1:
         return args[0]
     else:
-        return kwargs['self']
+        return kwargs["self"]
 
 
 original_open = builtins.open
@@ -38,9 +38,9 @@ logger = logging.getLogger(__name__)
 
 
 def print_error(msg: str, traceback: list[str]):
-    output = [f'\n===== {msg} =====\n']
+    output = [f"\n===== {msg} =====\n"]
     output.extend(traceback[:-1])
-    logger.error(''.join(output))
+    logger.error("".join(output))
 
 
 def patched_open(*args, **kwargs):
@@ -89,10 +89,10 @@ def run():
         for id_, fd in list(FDS.items()):
             if fd.created_at < threshold:
                 FDS.pop(id_)
-                print_error('UNCLOSED', fd.stack)
+                print_error("UNCLOSED", fd.stack)
 
     for fd in FDS.values():
-        print_error('UNCLOSED', fd.stack)
+        print_error("UNCLOSED", fd.stack)
 
 
 def patch_fds():

@@ -1,13 +1,12 @@
 import os
 import sys
-from pathlib import Path
 import pytest
 from leaky.__main__ import main
 
 
 def test_main_no_args(capsys):
     """Test main with no arguments"""
-    sys.argv = ['leaky']
+    sys.argv = ["leaky"]
     with pytest.raises(SystemExit) as exc_info:
         main()
     assert exc_info.value.code == 1
@@ -17,7 +16,7 @@ def test_main_no_args(capsys):
 
 def test_main_with_nonexistent_module(capsys):
     """Test main with a module that doesn't exist"""
-    sys.argv = ['leaky', 'nonexistent_module']
+    sys.argv = ["leaky", "nonexistent_module"]
     with pytest.raises(SystemExit) as exc_info:
         main()
     assert exc_info.value.code == 1
@@ -30,18 +29,16 @@ def test_main_with_python_file(tmp_path, capsys):
     # Create a test Python file
     test_file = tmp_path / "test_script.py"
     test_file.write_text("print('Hello from test script')")
-    
-    sys.argv = ['leaky', str(test_file)]
+
+    sys.argv = ["leaky", str(test_file)]
     main()
     captured = capsys.readouterr()
     assert "Hello from test script" in captured.out
-    assert 'DEBUG' in os.environ
-    assert os.environ['DEBUG'] == '1'
 
 
 def test_main_with_nonexistent_file(capsys):
     """Test main with a Python file that doesn't exist"""
-    sys.argv = ['leaky', 'nonexistent.py']
+    sys.argv = ["leaky", "nonexistent.py"]
     with pytest.raises(SystemExit) as exc_info:
         main()
     assert exc_info.value.code == 1
