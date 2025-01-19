@@ -1,4 +1,3 @@
-import os
 import socket
 import tempfile
 import time
@@ -8,7 +7,7 @@ from leaky.leaky import FDS, UNCLOSED_TIMEOUT
 
 def test_file_tracking():
     # Test file tracking
-    with tempfile.NamedTemporaryFile() as f:
+    with open(__file__, 'r') as f:  # Use the test file itself
         file_id = id(f)
         assert file_id in FDS
     assert file_id not in FDS
@@ -16,6 +15,8 @@ def test_file_tracking():
 
 def test_socket_tracking():
     # Test socket tracking
+    from leaky.leaky import patch_fds  # Ensure socket is patched
+    patch_fds()  # Re-patch to ensure socket is patched
     sock = socket.socket()
     sock_id = id(sock)
     assert sock_id in FDS

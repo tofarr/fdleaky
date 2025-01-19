@@ -1,4 +1,3 @@
-import os
 import sys
 import pytest
 from leaky.__main__ import main

@@ -5,8 +5,6 @@ import signal
 import threading
 import time
 from types import FrameType
-from typing import Any
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,7 +21,7 @@ def _register_signal_handler(sig: signal.Signals):
     original_handler = None
 
     def handler(sig_: int, frame: FrameType | None):
-        logger.debug(f"shutdown_signal:{sig_}")
+        logger.debug("shutdown_signal:%s", sig_)
         global _should_exit
         _should_exit = True
         if original_handler:
