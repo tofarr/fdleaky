@@ -14,45 +14,56 @@ HANDLED_SIGNALS = (
     signal.SIGTERM,  # Unix signal 15. Sent by `kill <pid>`.
 )
 
-_should_exit = None
+
+class ShutdownManager:
+    _instance = None
+    _should_exit = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def _register_signal_handler(self, sig: signal.Signals):
+        original_handler = None
+
+        def handler(sig_: int, frame: FrameType | None):
+            logger.debug("shutdown_signal:%s", sig_)
+            self._should_exit = True
+            if original_handler:
+                original_handler(sig_, frame)  # type: ignore[unreachable]
+
+        original_handler = signal.signal(sig, handler)
+
+    def register_signal_handlers(self):
+        if self._should_exit is not None:
+            return
+        self._should_exit = False
+        logger.debug("_register_signal_handlers")
+        # Check if we're in the main thread of the main interpreter
+        if threading.current_thread() is threading.main_thread():
+            logger.debug("_register_signal_handlers:main_thread")
+            for sig in HANDLED_SIGNALS:
+                self._register_signal_handler(sig)
+        else:
+            logger.debug("_register_signal_handlers:not_main_thread")
+
+    @property
+    def should_exit(self) -> bool:
+        return bool(self._should_exit)
 
 
-def _register_signal_handler(sig: signal.Signals):
-    original_handler = None
-
-    def handler(sig_: int, frame: FrameType | None):
-        logger.debug("shutdown_signal:%s", sig_)
-        global _should_exit
-        _should_exit = True
-        if original_handler:
-            original_handler(sig_, frame)  # type: ignore[unreachable]
-
-    original_handler = signal.signal(sig, handler)
-
-
-def _register_signal_handlers():
-    global _should_exit
-    if _should_exit is not None:
-        return
-    _should_exit = False
-    logger.debug("_register_signal_handlers")
-    # Check if we're in the main thread of the main interpreter
-    if threading.current_thread() is threading.main_thread():
-        logger.debug("_register_signal_handlers:main_thread")
-        for sig in HANDLED_SIGNALS:
-            _register_signal_handler(sig)
-    else:
-        logger.debug("_register_signal_handlers:not_main_thread")
+_manager = ShutdownManager()
 
 
 def should_exit() -> bool:
-    _register_signal_handlers()
-    return bool(_should_exit)
+    _manager.register_signal_handlers()
+    return _manager.should_exit
 
 
 def should_continue() -> bool:
-    _register_signal_handlers()
-    return not _should_exit
+    _manager.register_signal_handlers()
+    return not _manager.should_exit
 
 
 def sleep_if_should_continue(timeout: float):

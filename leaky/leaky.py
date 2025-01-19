@@ -1,11 +1,12 @@
 import builtins
+from dataclasses import dataclass, field
 import logging
 import socket
+from threading import Thread
 import time
 import traceback
-from dataclasses import dataclass, field
-from threading import Thread
 from typing import Any
+import _io
 
 from leaky.shutdown_listener import should_continue
 
@@ -99,8 +100,6 @@ def run():
 
 
 def patch_fds():
-    import _io
-
     builtins.open = patched_open
     _io.open = patched_open  # Also patch _io.open for tempfile module
     socket.socket.__init__ = patched_init  # type: ignore
