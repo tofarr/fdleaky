@@ -58,5 +58,3 @@ Leaky works by:
 2. Tracking all open file descriptors
 3. Monitoring for resources that remain open too long
 4. Providing stack traces to help identify the source of leaks
-
-The monitoring is only active when the DEBUG environment variable is set to '1', which is handled automatically when running through the leaky module.
