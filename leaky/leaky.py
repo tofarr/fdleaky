@@ -100,6 +100,7 @@ def run():
 
 def patch_fds():
     import _io
+
     builtins.open = patched_open
     _io.open = patched_open  # Also patch _io.open for tempfile module
     socket.socket.__init__ = patched_init  # type: ignore
