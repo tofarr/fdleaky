@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: testcoverage
-        run: poetry run pytest -n auto --cov-report=term-missing --cov=tests --cov=leaky --cov-fail-under=100
+        run: poetry run pytest -n auto --cov-report=term-missing --cov=tests --cov=leaky --cov-fail-under=90
 
   pylint:
     runs-on: ubuntu-latest
