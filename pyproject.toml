@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "leaky"
+name = "fdleaky"
 version = "0.0.0"  # Placeholder - actual version will be determined from git tags
 description = "A simple IOC / Dependency injection micro framework for Python."
 authors = ["Tim O'Farrell <tofarr@gmail.com>"]
 readme = "README.md"
-packages = [{include = "leaky"}]
+packages = [{include = "fdleaky"}]
 exclude = ["tests*"]
-repository = "https://github.com/tofarr/leaky"
+repository = "https://github.com/tofarr/fdleaky"
 license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",

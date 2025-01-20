@@ -1,9 +1,9 @@
 import pytest
-from leaky.leaky import patch_fds, FDS
+from fdleaky.fdleaky import patch_fds, FDS
 
 
 @pytest.fixture(autouse=True)
-def setup_leaky():
+def setup_fdleaky():
     """Automatically patch file descriptors before each test"""
     patch_fds()
     yield

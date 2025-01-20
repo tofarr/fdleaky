@@ -1,4 +1,4 @@
-"""Main entry point for leaky module"""
+"""Main entry point for fdleaky module"""
 
 import importlib.util
 import sys
@@ -6,13 +6,13 @@ from pathlib import Path
 
 import uvicorn
 
-from leaky.leaky import patch_fds
+from fdleaky.fdleaky import patch_fds
 
 
 def main():
     """Main entry point"""
     if len(sys.argv) < 2:
-        print("Usage: python -m leaky module_to_run [args...]", file=sys.stderr)
+        print("Usage: python -m fdleaky module_to_run [args...]", file=sys.stderr)
         sys.exit(1)
 
     # Enable FD tracking
@@ -21,13 +21,13 @@ def main():
     # Get the module to run
     module_name = sys.argv[1]
 
-    # Remove 'leaky' from sys.argv
+    # Remove 'fdleaky' from sys.argv
     sys.argv = sys.argv[1:]
 
     if module_name == "uvicorn":
         # We handle uvicorn as it's own special case.
         uvicorn.main()
-    
+
     elif module_name.endswith(".py"):
         # If it's a .py file, load it directly
         module_path = Path(module_name).resolve()
@@ -56,7 +56,10 @@ def main():
                 # This works as long as the module does not check "if __name__ == "__main__"
                 importlib.import_module(module_name)
             except ImportError as e:
-                print(f"Error: Could not import module {module_name}: {e}", file=sys.stderr)
+                print(
+                    f"Error: Could not import module {module_name}: {e}",
+                    file=sys.stderr,
+                )
                 sys.exit(1)
 
 
