@@ -30,7 +30,9 @@ def main():
             sys.exit(1)
 
         # Load the module from file
-        spec = importlib.util.spec_from_file_location(module_path.stem, str(module_path))
+        spec = importlib.util.spec_from_file_location(
+            module_path.stem, str(module_path)
+        )
         if spec is None or spec.loader is None:
             print(f"Error: Could not load {module_name}", file=sys.stderr)
             sys.exit(1)
