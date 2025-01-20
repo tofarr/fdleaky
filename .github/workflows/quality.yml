@@ -1,37 +1,55 @@
 name: Quality
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: push
 
 jobs:
-  quality:
+  black:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Install poetry
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        
-    - name: Install dependencies
-      run: poetry install
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.X
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.X"
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry config virtualenvs.create false
+      - name: Install dependencies
+        run: poetry install
+      - name: black
+        run: poetry run black . --check
 
-    - name: Check formatting with black
-      run: poetry run black . --check
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.X
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.X"
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry config virtualenvs.create false
+      - name: Install dependencies
+        run: poetry install
+      - name: testcoverage
+        run: poetry run pytest -n auto --cov-report=term-missing --cov=tests --cov=leaky --cov-fail-under=90
 
-    - name: Lint with pylint
-      run: poetry run pylint leaky tests
-
-    - name: Test with pytest
-      run: poetry run pytest
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.X
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.X"
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry config virtualenvs.create false
+      - name: Install dependencies
+        run: poetry install
+      - name: lint
+        run: poetry run pylint leaky

@@ -1,29 +1,36 @@
 [tool.poetry]
 name = "leaky"
-version = "0.0.1"
-description = "A Python project template"
-authors = ["tofarr <tofarr@gmail.com>"]
+version = "0.0.0"  # Placeholder - actual version will be determined from git tags
+description = "A simple IOC / Dependency injection micro framework for Python."
+authors = ["Tim O'Farrell <tofarr@gmail.com>"]
 readme = "README.md"
 packages = [{include = "leaky"}]
+exclude = ["tests*"]
+repository = "https://github.com/tofarr/leaky"
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"  # Setting a reasonable Python version requirement
+uvicorn = "^0.34.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-pytest-cov = "^4.1.0"
-pytest-asyncio = "^0.23.0"
-black = "^24.10.0"
-pylint = "^3.3.3"
+black = "~23.3"
+pytest = "~7.2"
+pytest-cov = "~4.0"
+pytest-xdist = "~3.2"
+pylint = "~3.0"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0"]
+build-backend = "poetry.dynamic_versioning.backend"
 
-[tool.black]
-line-length = 100
-target-version = ['py38']
-
-[tool.pytest.ini_options]
-addopts = "--cov=leaky --cov-report=term-missing"
-testpaths = ["tests"]
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
+pattern = "^(?P<base>\\d+\\.\\d+\\.\\d+)$"

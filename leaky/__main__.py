@@ -4,6 +4,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import uvicorn
+
 from leaky.leaky import patch_fds
 
 
@@ -22,15 +24,21 @@ def main():
     # Remove 'leaky' from sys.argv
     sys.argv = sys.argv[1:]
 
-    # If it's a .py file, load it directly
-    if module_name.endswith(".py"):
+    if module_name == "uvicorn":
+        # We handle uvicorn as it's own special case.
+        uvicorn.main()
+    
+    elif module_name.endswith(".py"):
+        # If it's a .py file, load it directly
         module_path = Path(module_name).resolve()
         if not module_path.exists():
             print(f"Error: File {module_name} not found", file=sys.stderr)
             sys.exit(1)
 
         # Load the module from file
-        spec = importlib.util.spec_from_file_location(module_path.stem, str(module_path))
+        spec = importlib.util.spec_from_file_location(
+            module_path.stem, str(module_path)
+        )
         if spec is None or spec.loader is None:
             print(f"Error: Could not load {module_name}", file=sys.stderr)
             sys.exit(1)
@@ -41,10 +49,15 @@ def main():
     else:
         # Try to import the module by name
         try:
-            importlib.import_module(module_name)
+            # This works as long as the module does not check "if __name__ == "__main__"
+            module = importlib.import_module(f"{module_name}.__main__")
         except ImportError as e:
-            print(f"Error: Could not import module {module_name}: {e}", file=sys.stderr)
-            sys.exit(1)
+            try:
+                # This works as long as the module does not check "if __name__ == "__main__"
+                importlib.import_module(module_name)
+            except ImportError as e:
+                print(f"Error: Could not import module {module_name}: {e}", file=sys.stderr)
+                sys.exit(1)
 
 
 if __name__ == "__main__":
