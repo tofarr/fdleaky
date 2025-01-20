@@ -1,8 +1,9 @@
 import socket
 import tempfile
 import time
+from unittest.mock import patch
 
-from leaky.leaky import FDS, UNCLOSED_TIMEOUT, patch_fds
+from leaky.leaky import FDS, patch_fds
 
 patch_fds()  # Re-patch to ensure socket is patched
 
@@ -26,14 +27,19 @@ def test_socket_tracking():
 
 def test_unclosed_detection():
     # Create an unclosed file
-    f = tempfile.NamedTemporaryFile()  # pylint: disable=R1732
-    file_id = id(f)
+    with patch("leaky.leaky.UNCLOSED_TIMEOUT", 0.1):
+        f = tempfile.NamedTemporaryFile()  # pylint: disable=R1732
+        f.write(b"some_data")
 
-    # Wait for the unclosed timeout
-    time.sleep(UNCLOSED_TIMEOUT + 1)
+        file_id = id(f)
+        # Make sure the file has been registered
+        assert file_id in FDS
 
-    # The file should be detected as unclosed and removed from tracking
-    assert file_id not in FDS
+        # Wait for the unclosed timeout
+        time.sleep(0.5)
 
-    # Clean up
-    f.close()
+        # The file should be detected as unclosed and removed from tracking
+        assert file_id not in FDS
+
+        # Clean up
+        f.close()

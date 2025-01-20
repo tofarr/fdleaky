@@ -8,6 +8,8 @@ from threading import Thread
 from typing import Any
 import _io
 
+from leaky.shutdown_listener import should_continue
+
 
 @dataclass(frozen=True)
 class FD:
@@ -19,6 +21,7 @@ class FD:
 FDS: dict[int, FD] = {}
 UNCLOSED_TIMEOUT = 180
 INTERVAL = 15
+_patched = False
 
 
 def get_self(args, kwargs):
@@ -85,7 +88,7 @@ def patched_detach(*args, **kwargs):
 
 
 def run():
-    while True:
+    while True: # should_continue():
         time.sleep(INTERVAL)
         threshold = time.time() - UNCLOSED_TIMEOUT
         for id_, fd in list(FDS.items()):
@@ -98,6 +101,10 @@ def run():
 
 
 def patch_fds():
+    global _patched  # pylint: disable=W0603
+    if _patched:
+        return
+    _patched = True
     builtins.open = patched_open
     _io.open = patched_open  # Also patch _io.open for tempfile module
     socket.socket.__init__ = patched_init  # type: ignore
