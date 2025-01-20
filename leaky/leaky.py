@@ -6,9 +6,7 @@ import traceback
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any
-import _io
-
-from leaky.shutdown_listener import should_continue
+from tempfile import _io
 
 
 @dataclass(frozen=True)
@@ -45,21 +43,17 @@ def print_error(msg: str, stack_trace: list[str]):
 
 
 def patched_open(*args, **kwargs):
-    print("patched_open called with:", args, kwargs)  # Debug print
     file_obj = original_open(*args, **kwargs)
     id_ = id(file_obj)
     file_close = file_obj.close
-    print("Created file object:", file_obj, "with id:", id_)  # Debug print
 
     def patched_file_close(*args, **kwargs):
-        print("patched_file_close called for id:", id_)  # Debug print
         FDS.pop(id_, None)
         result = file_close(*args, **kwargs)
         return result
 
     file_obj.close = patched_file_close
     FDS[id_] = FD(file_obj, traceback.format_stack())
-    print("Added to FDS:", id_, FDS)  # Debug print
     return file_obj
 
 
@@ -88,16 +82,17 @@ def patched_detach(*args, **kwargs):
 
 
 def run():
-    while True: # should_continue():
-        time.sleep(INTERVAL)
-        threshold = time.time() - UNCLOSED_TIMEOUT
-        for id_, fd in list(FDS.items()):
-            if fd.created_at < threshold:
-                FDS.pop(id_)
-                print_error("UNCLOSED", fd.stack)
-
-    for fd in FDS.values():
-        print_error("UNCLOSED", fd.stack)
+    try:
+        while True:
+            time.sleep(INTERVAL)
+            threshold = time.time() - UNCLOSED_TIMEOUT
+            for id_, fd in list(FDS.items()):
+                if fd.created_at < threshold:
+                    FDS.pop(id_)
+                    print_error("UNCLOSED", fd.stack)
+    except SystemExit:
+        for fd in FDS.values():
+            print_error("UNCLOSED", fd.stack)
 
 
 def patch_fds():
