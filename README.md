@@ -32,6 +32,12 @@ python -m leaky your_module
 
 # Run a Python file
 python -m leaky your_script.py
+
+# Run a package with __main__.py
+python -m leaky your_package
+
+# Run with uvicorn
+poetry run python -m leaky uvicorn my_app:app
 ```
 
 When a file descriptor remains open longer than the threshold (default 180 seconds), Leaky will log:
