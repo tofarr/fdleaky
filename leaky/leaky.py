@@ -1,3 +1,4 @@
+
 import builtins
 import logging
 import socket
@@ -6,9 +7,7 @@ import traceback
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any
-
-from leaky.shutdown_listener import should_continue
-
+import _io
 
 @dataclass(frozen=True)
 class FD:
@@ -86,7 +85,7 @@ def patched_detach(*args, **kwargs):
 
 
 def run():
-    while should_continue():
+    while True:
         time.sleep(INTERVAL)
         threshold = time.time() - UNCLOSED_TIMEOUT
         for id_, fd in list(FDS.items()):
@@ -99,8 +98,6 @@ def run():
 
 
 def patch_fds():
-    import _io
-
     builtins.open = patched_open
     _io.open = patched_open  # Also patch _io.open for tempfile module
     socket.socket.__init__ = patched_init  # type: ignore
