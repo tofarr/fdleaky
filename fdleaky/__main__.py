@@ -4,7 +4,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-import uvicorn
+from uvicorn.main import main as uvicorn_main
 
 from fdleaky.fdleaky import patch_fds
 
@@ -26,7 +26,7 @@ def main():
 
     if module_name == "uvicorn":
         # We handle uvicorn as it's own special case.
-        uvicorn.main()
+        uvicorn_main()  # pylint: disable=E1120
 
     elif module_name.endswith(".py"):
         # If it's a .py file, load it directly
@@ -55,9 +55,9 @@ def main():
             try:
                 # This works as long as the module does not check "if __name__ == "__main__"
                 importlib.import_module(module_name)
-            except ImportError as e:
+            except ImportError as err:
                 print(
-                    f"Error: Could not import module {module_name}: {e}",
+                    f"Error: Could not import module {module_name}: {err}",
                     file=sys.stderr,
                 )
                 sys.exit(1)
