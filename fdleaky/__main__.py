@@ -51,13 +51,13 @@ def main():
         try:
             # This works as long as the module does not check "if __name__ == "__main__"
             module = importlib.import_module(f"{module_name}.__main__")
-        except ImportError as e:
+        except ImportError:
             try:
                 # This works as long as the module does not check "if __name__ == "__main__"
                 importlib.import_module(module_name)
-            except ImportError as err:
+            except ImportError as e:
                 print(
-                    f"Error: Could not import module {module_name}: {err}",
+                    f"Error: Could not import module {module_name}: {e}",
                     file=sys.stderr,
                 )
                 sys.exit(1)
