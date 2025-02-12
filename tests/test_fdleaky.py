@@ -1,11 +1,15 @@
 import socket
 import tempfile
 import time
+from unittest.mock import MagicMock, patch
 
 from fdleaky import fdleaky
 
+# Monkey patches...
+fdleaky.sys = MagicMock()
+fdleaky.termios = MagicMock()
+fdleaky.fcntl = MagicMock()
 fdleaky.INTERVAL = 0.1
-fdleaky.UNCLOSED_TIMEOUT = 0.1
 fdleaky.patch_fds()
 
 
@@ -36,7 +40,8 @@ def test_unclosed_detection():
     # Make sure the file has been registered
     assert len(fdleaky.FDS) == num_open_files + 1
 
-    # Wait for the unclosed timeout
+    # Wait for key press
+    fdleaky.sys.stdin.read.return_value = "p"
     time.sleep(1)
 
     # The file should be detected as unclosed and removed from tracking

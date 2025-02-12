@@ -2,6 +2,8 @@
 
 A Python utility for detecting file descriptor leaks in Python applications. fdleaky monitors file and socket operations in your application and reports any resources that remain open longer than expected.
 
+Upon suspicion of unclosed File Descriptors being present, hit `p` in the terminal to print stack traces for the point at which each file descriptor was opened.
+
 ## Purpose
 
 File descriptor leaks can be difficult to track down, especially in long-running applications. These leaks can lead to:
