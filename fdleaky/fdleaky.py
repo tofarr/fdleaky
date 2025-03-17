@@ -121,7 +121,9 @@ def sample_at_interval(matcher: Callable[[FD], bool], processor: Callable[[FD], 
         time.sleep(INTERVAL)
 
 
-def start_sample_at_interval(matcher: Callable[[FD], bool], processor: Callable[[FD], None]):
+def start_sample_at_interval(
+    matcher: Callable[[FD], bool], processor: Callable[[FD], None]
+):
     Thread(target=sample_at_interval, args=(matcher, processor), daemon=True).start()
 
 
