@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fdleaky"
-version = "0.0.0"  # Placeholder - actual version will be determined from git tags
+version = "0.0.5"  # Placeholder - actual version will be determined from git tags
 description = "A simple IOC / Dependency injection micro framework for Python."
 authors = ["Tim O'Farrell <tofarr@gmail.com>"]
 readme = "README.md"
@@ -24,14 +24,3 @@ pytest = "~7.2"
 pytest-cov = "~4.0"
 pytest-xdist = "~3.2"
 pylint = "~3.0"
-poetry-dynamic-versioning = "~1.7"
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.7.1"]
-build-backend = "poetry.dynamic_versioning.backend"
-
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "pep440"
-pattern = "^(?P<base>\\d+\\.\\d+\\.\\d+)$"
