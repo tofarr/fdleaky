@@ -9,7 +9,7 @@ import time
 import traceback
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Any
+from typing import Any, Callable, Iterator
 from tempfile import _io
 
 
@@ -107,18 +107,39 @@ def getch():
         fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
 
-def run():
+def sample_fds(matcher: Callable[[FD], bool]) -> Iterator[FD]:
+    for id_, fd in list(FDS.items()):
+        if matcher(fd):
+            FDS.pop(id_)
+            yield fd
+
+
+def sample_at_interval(matcher: Callable[[FD], bool], processor: Callable[[FD], None]):
+    while True:
+        for fd in sample_fds(matcher):
+            processor(fd)
+        time.sleep(INTERVAL)
+
+
+def start_sample_at_interval(matcher: Callable[[FD], bool], processor: Callable[[FD], None]):
+    Thread(target=sample_at_interval, args=(matcher, processor), daemon=True).start()
+
+
+def sample_on_key_press(matcher: Callable[[FD], bool]):
     try:
         while True:
             if getch() == "p":
                 logger.error("\n===== LISTING =====\n")
-                for id_, fd in list(FDS.items()):
-                    FDS.pop(id_)
+                for fd in sample_fds(matcher):
                     print_error("UNCLOSED", fd.stack)
             time.sleep(INTERVAL)
     except SystemExit:
         for fd in FDS.values():
             print_error("UNCLOSED", fd.stack)
+
+
+def start_sample_on_key_press():
+    Thread(target=sample_on_key_press, args=(lambda fd: True,), daemon=True).start()
 
 
 def patch_fds():
@@ -131,4 +152,3 @@ def patch_fds():
     socket.socket.__init__ = patched_init  # type: ignore
     socket.socket.close = patched_close  # type: ignore
     socket.socket.detach = patched_detach  # type: ignore
-    Thread(target=run, daemon=True).start()

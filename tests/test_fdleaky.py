@@ -11,6 +11,7 @@ fdleaky.termios = MagicMock()
 fdleaky.fcntl = MagicMock()
 fdleaky.INTERVAL = 0.1
 fdleaky.patch_fds()
+fdleaky.start_sample_on_key_press()
 
 
 def test_file_tracking():

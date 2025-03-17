@@ -6,7 +6,7 @@ from pathlib import Path
 
 from uvicorn.main import main as uvicorn_main
 
-from fdleaky.fdleaky import patch_fds
+from fdleaky.fdleaky import patch_fds, start_sample_on_key_press
 
 
 def main():
@@ -17,6 +17,7 @@ def main():
 
     # Enable FD tracking
     patch_fds()
+    start_sample_on_key_press()
 
     # Get the module to run
     module_name = sys.argv[1]
