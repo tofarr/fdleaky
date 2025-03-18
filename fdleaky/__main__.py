@@ -6,7 +6,7 @@ from pathlib import Path
 
 from uvicorn.main import main as uvicorn_main
 
-from fdleaky.fdleaky import patch_fds, start_sample_on_key_press
+from fdleaky.fd_tracker import FdTracker
 
 
 def main():
@@ -16,8 +16,8 @@ def main():
         sys.exit(1)
 
     # Enable FD tracking
-    patch_fds()
-    start_sample_on_key_press()
+    fd_tracker = FdTracker()
+    fd_tracker.start()
 
     # Get the module to run
     module_name = sys.argv[1]
