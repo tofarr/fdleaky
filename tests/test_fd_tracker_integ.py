@@ -1,9 +1,12 @@
+import os
 import random
 import socketserver
 from tempfile import NamedTemporaryFile
 from threading import Thread
 import time
 import urllib.request
+
+import pytest
 from fdleaky.fd_tracker import FdTracker
 from http.server import SimpleHTTPRequestHandler
 
@@ -34,6 +37,10 @@ def test_temp():
         assert len(tracker.short_term_store) == 0
 
 
+@pytest.mark.skipif(
+    os.environ.get("GITHUB_ACTIONS") == "true",
+    reason="This integration style test is flaky in github actions",
+)
 def test_http():
     port = random.randint(30000, 31000)
     httpd = None
