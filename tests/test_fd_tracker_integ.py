@@ -13,7 +13,7 @@ from http.server import SimpleHTTPRequestHandler
 
 def test_open():
     temp_file = NamedTemporaryFile(delete=False, delete_on_close=True)
-    with FdTracker() as tracker:
+    with FdTracker(sleep_interval=0.1) as tracker:
         with open(temp_file.name, "w") as writer:
             assert len(tracker.short_term_store) == 1
             fd = next(iter(tracker.short_term_store.values()))
@@ -26,7 +26,7 @@ def test_open():
 
 
 def test_temp():
-    with FdTracker() as tracker:
+    with FdTracker(sleep_interval=0.1) as tracker:
         with NamedTemporaryFile(delete=True, delete_on_close=True) as temp_file:
             temp_file.write(b"tested")
             assert len(tracker.short_term_store) == 1
@@ -44,7 +44,7 @@ def test_temp():
 def test_http():
     port = random.randint(30000, 31000)
     httpd = None
-    with FdTracker() as tracker:
+    with FdTracker(sleep_interval=0.1) as tracker:
         try:
             # Create and start a simple server
             def run_server():

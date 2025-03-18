@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import socket
 from tempfile import _io
 from threading import Thread
+import time
 import traceback as tb
 from typing import Callable
 
@@ -72,8 +73,8 @@ class FdTracker:
         socket.socket.close = _patched_close
         socket.socket.detach = _patched_detach
         self._worker = Thread(target=self._do_long_term_store, daemon=True)
-        self._worker.start()
         self.is_open = True
+        self._worker.start()
 
     def close(self):
         if not self.is_open:
@@ -155,6 +156,7 @@ class FdTracker:
         while self.is_open:
             for fd in list(self.short_term_store.values()):
                 self._process_fd_for_long_term(fd)
+            time.sleep(self.sleep_interval)
 
 
 def _get_subject(args, kwargs):
