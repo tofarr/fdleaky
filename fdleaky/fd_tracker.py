@@ -1,5 +1,3 @@
-
-
 import builtins
 from dataclasses import dataclass, field
 import socket
@@ -20,6 +18,7 @@ class FdTracker:
     in a local dictionary. A file descriptor may be copied to long term storage, if the associated factory can create an info object
     for it.
     """
+
     fd_info_factory: FdInfoFactory = field(default_factory=FdInfoFactory)
     long_term_store: FdInfoStore = field(default_factory=DirFdInfoStore)
     short_term_store: dict[int, Fd] = field(default_factory=dict)
@@ -35,11 +34,11 @@ class FdTracker:
     def __enter__(self):
         self.start()
         return self
-    
+
     def __exit__(self, type, value, traceback):
         self.close()
         return False
-    
+
     def start(self):
         if self.is_open:
             return
@@ -71,7 +70,7 @@ class FdTracker:
         id_ = id(file_obj)
         self.short_term_store[id_] = fd
         return id_
-    
+
     def _close_fd(self, id_: int):
         self.short_term_store.pop(id_)
         stored_id = self._id_mapping.pop(id_, None)
@@ -110,7 +109,7 @@ class FdTracker:
         id_ = id(subject)
         self._close_fd(id_)
         return result
-    
+
     def _do_long_term_store(self):
         while self.is_open:
             for fd in list(self.short_term_store.values()):
@@ -120,7 +119,7 @@ class FdTracker:
                     if fd_info:
                         self.long_term_store.create(fd_info)
                         self._id_mapping[id_] = fd_info.id
-    
+
 
 def _get_subject(args, kwargs):
     if len(args) >= 1:
