@@ -11,7 +11,7 @@ from fdleaky.fd_info_factory import FdInfoFactory
 from fdleaky.fd_info_store import FdInfoStore
 
 
-# pylint: disable=R0902
+# pylint: disable=R0902, W0622
 @dataclass
 class FdTracker:
     """
@@ -47,11 +47,11 @@ class FdTracker:
         self._original_init = socket.socket.__init__
         self._original_close = socket.socket.close
         self._original_detach = socket.socket.detach
-        builtins.open = self._patched_open  # type: ignore
-        _io.open = self._patched_open  # Also patch _io.open for tempfile module
-        socket.socket.__init__ = self._patched_init  # type: ignore
-        socket.socket.close = self._patched_close  # type: ignore
-        socket.socket.detach = self._patched_detach  # type: ignore
+        builtins.open = self._patched_open
+        _io.open = self._patched_open
+        socket.socket.__init__ = self._patched_init
+        socket.socket.close = self._patched_close
+        socket.socket.detach = self._patched_detach
         self._worker = Thread(target=self._do_long_term_store, daemon=True)
         self._worker.start()
         self.is_open = True
