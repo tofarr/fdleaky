@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import socket
 from tempfile import _io
 from threading import Thread
-import traceback
+import traceback as tb
 
 from fdleaky.dir_fd_info_store import DirFdInfoStore
 from fdleaky.fd import Fd
@@ -14,9 +14,9 @@ from fdleaky.fd_info_store import FdInfoStore
 @dataclass
 class FdTracker:
     """
-    Tracker for leaking file descriptors. Patches built in function storing a stack trace for when they are File Descriptors are Opened
-    in a local dictionary. A file descriptor may be copied to long term storage, if the associated factory can create an info object
-    for it.
+    Tracker for leaking file descriptors. Patches built in function storing a stack trace for when
+    they are File Descriptors are Opened in a local dictionary. A file descriptor may be copied to
+    long term storage, if the associated factory can create an info object for it.
     """
 
     fd_info_factory: FdInfoFactory = field(default_factory=FdInfoFactory)
@@ -51,14 +51,14 @@ class FdTracker:
         socket.socket.__init__ = self._patched_init  # type: ignore
         socket.socket.close = self._patched_close  # type: ignore
         socket.socket.detach = self._patched_detach  # type: ignore
-        self._worker = Thread(self._do_long_term_store, daemon=True)
+        self._worker = Thread(target=self._do_long_term_store, daemon=True)
         self._worker.start()
         self.is_open = True
 
     def close(self):
         if not self.is_open:
             return
-        builtins.open = self._patched_open
+        builtins.open = self._patched_open # pylint: disable=W0622
         socket.socket.__init__ = self._original_init
         socket.socket.close = self._original_close
         socket.socket.detach = self._original_detach
@@ -66,7 +66,7 @@ class FdTracker:
         self._worker.join()
 
     def _create_fd(self, file_obj) -> int:
-        fd = Fd(file_obj, traceback.format_stack())
+        fd = Fd(file_obj, tb.format_stack())
         id_ = id(file_obj)
         self.short_term_store[id_] = fd
         return id_

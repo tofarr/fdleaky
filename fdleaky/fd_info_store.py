@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from fdleaky.fd import Fd
 from fdleaky.fd_info import FdInfo
 
 

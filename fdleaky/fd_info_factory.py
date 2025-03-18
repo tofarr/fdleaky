@@ -8,9 +8,9 @@ from fdleaky.fd_info import FdInfo
 @dataclass
 class FdInfoFactory:
     """
-    Object for creating a FdInfo object from an Fd - also useful for determining if an fd should be transferred
-    to long term storage. This is Useful for filtering out general cases we don't want to monitor, such as
-    database connection pools and listen operations on server sockets.
+    Object for creating a FdInfo object from an Fd - also useful for determining if an fd should
+    be transferred to long term storage. This is Useful for filtering out general cases we don't
+    want to monitor, such as database connection pools and listen operations on server sockets.
 
     The default implementation stores any open file descriptor over 1 minute old.
     """

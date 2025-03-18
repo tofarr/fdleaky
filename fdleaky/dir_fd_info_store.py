@@ -1,6 +1,5 @@
 from dataclasses import dataclass, asdict
 import json
-import os
 from pathlib import Path
 from fdleaky.fd_info import FdInfo
 from fdleaky.fd_info_store import FdInfoStore
@@ -13,7 +12,7 @@ class DirFdInfoStore(FdInfoStore):
     def create(self, fd_info: FdInfo):
         json_obj = asdict(fd_info)
         json_obj["created_at"] = str(json_obj["created_at"])
-        with open(self.dir / f"{fd_info.id}.json", mode="w") as file:
+        with open(self.dir / f"{fd_info.id}.json", mode="w", encoding="utf-8") as file:
             json.dump(json_obj, file, indent=2)
 
     def delete(self, stored_id: str) -> bool:
