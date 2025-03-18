@@ -35,7 +35,7 @@ class FdInfoFactory:
         return next(
             (
                 frame
-                for frame in fd.stack
+                for frame in reversed(fd.stack)
                 if next(
                     (
                         True

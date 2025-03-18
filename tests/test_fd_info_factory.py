@@ -57,7 +57,7 @@ class TestFdInfoFactory:
         assert isinstance(result, FdInfo)
         assert (
             result.identifier
-            == 'File "/usr/lib/python3.9/test_module.py", line 45, in test_function'
+            == 'File "/usr/lib/python3.9/example_module.py", line 78, in example_function'
         )
         assert result.stack == self.test_stack
         assert result.created_at == datetime.fromtimestamp(self.old_time)
@@ -101,7 +101,7 @@ class TestFdInfoFactory:
         assert result is not None
         assert isinstance(result, FdInfo)
         # Empty string is in every string, so the first stack frame should be used
-        assert result.identifier == self.test_stack[0]
+        assert result.identifier == self.test_stack[-1]
 
     @patch("time.time")
     def test_create_fd_info_with_mocked_time(self, mock_time):
@@ -129,7 +129,7 @@ class TestFdInfoFactory:
         # Assert
         assert (
             result
-            == 'File "/usr/lib/python3.9/test_module.py", line 45, in test_function'
+            == 'File "/usr/lib/python3.9/example_module.py", line 78, in example_function'
         )
 
     def test_get_identifier_with_multiple_matches(self):
@@ -146,7 +146,7 @@ class TestFdInfoFactory:
         # Should return the first match in the stack
         assert (
             result
-            == 'File "/usr/lib/python3.9/test_module.py", line 45, in test_function'
+            == 'File "/usr/lib/python3.9/example_module.py", line 78, in example_function'
         )
 
     def test_get_identifier_with_no_match(self):
@@ -178,4 +178,4 @@ class TestFdInfoFactory:
 
         # Assert
         # Empty string is in every string, so the first stack frame should be used
-        assert result == self.test_stack[0]
+        assert result == self.test_stack[-1]

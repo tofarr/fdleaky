@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fdleaky"
-version = "0.0.10"
+version = "0.0.11"
 description = "A simple IOC / Dependency injection micro framework for Python."
 authors = ["Tim O'Farrell <tofarr@gmail.com>"]
 readme = "README.md"
