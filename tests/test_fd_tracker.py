@@ -2,7 +2,7 @@ import builtins
 import socket
 from tempfile import _io
 import threading
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock
 
 from fdleaky.fd import Fd
 from fdleaky.fd_info import FdInfo
@@ -309,12 +309,7 @@ class TestFdTracker:
 
         # Act - directly test the logic inside _do_long_term_store without the loop
         for fd in list(self.tracker.short_term_store.values()):
-            id_ = id(fd.subject)
-            if id_ not in self.tracker._id_mapping:
-                fd_info = self.mock_fd_info_factory.create_fd_info(fd)
-                if fd_info:
-                    self.mock_long_term_store.create(fd_info)
-                    self.tracker._id_mapping[id_] = fd_info.id
+            self.tracker._process_fd_for_long_term(fd)
 
         # Assert
         self.mock_fd_info_factory.create_fd_info.assert_called_with(fd)

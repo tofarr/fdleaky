@@ -4,6 +4,7 @@ import socket
 from tempfile import _io
 from threading import Thread
 import traceback as tb
+from typing import Callable
 
 from fdleaky.dir_fd_info_store import DirFdInfoStore
 from fdleaky.fd import Fd
@@ -26,10 +27,11 @@ class FdTracker:
     sleep_interval: int = 5
     is_open: bool = False
     _id_mapping: dict[int, str] = field(default_factory=dict)
-    _original_open: callable = None
-    _original_init: callable = None
-    _original_close: callable = None
-    _original_detach: callable = None
+    _original_open: Callable | None = None
+    _original_io_open: Callable | None = None
+    _original_init: Callable | None = None
+    _original_close: Callable | None = None
+    _original_detach: Callable | None = None
     _worker: Thread = None
 
     def __enter__(self):
@@ -44,14 +46,31 @@ class FdTracker:
         if self.is_open:
             return
         self._original_open = builtins.open
+        self._original_io_open = _io.open
         self._original_init = socket.socket.__init__
         self._original_close = socket.socket.close
         self._original_detach = socket.socket.detach
-        builtins.open = self._patched_open
-        _io.open = self._patched_open
-        socket.socket.__init__ = self._patched_init
-        socket.socket.close = self._patched_close
-        socket.socket.detach = self._patched_detach
+
+        def _patched_open(*args, **kwargs):
+            return self._patched_open(*args, **kwargs)
+
+        def _patched_io_open(*args, **kwargs):
+            return self._patched_io_open(*args, **kwargs)
+
+        def _patched_init(*args, **kwargs):
+            return self._patched_init(*args, **kwargs)
+        
+        def _patched_close(*args, **kwargs):
+            return self._patched_close(*args, **kwargs)
+
+        def _patched_detach(*args, **kwargs):
+            return self._patched_detach(*args, **kwargs)
+
+        builtins.open = _patched_open
+        _io.open = _patched_io_open
+        socket.socket.__init__ = _patched_init
+        socket.socket.close = _patched_close
+        socket.socket.detach = _patched_detach
         self._worker = Thread(target=self._do_long_term_store, daemon=True)
         self._worker.start()
         self.is_open = True
@@ -59,24 +78,13 @@ class FdTracker:
     def close(self):
         if not self.is_open:
             return
-        builtins.open = self._patched_open  # pylint: disable=W0622
+        builtins.open = self._original_open  # pylint: disable=W0622
         socket.socket.__init__ = self._original_init
         socket.socket.close = self._original_close
         socket.socket.detach = self._original_detach
         self.is_open = False
         self._worker.join()
 
-    def _create_fd(self, file_obj) -> int:
-        fd = Fd(file_obj, tb.format_stack())
-        id_ = id(file_obj)
-        self.short_term_store[id_] = fd
-        return id_
-
-    def _close_fd(self, id_: int):
-        self.short_term_store.pop(id_)
-        stored_id = self._id_mapping.pop(id_, None)
-        if stored_id:
-            self.long_term_store.delete(stored_id)
 
     def _patched_open(self, *args, **kwargs):
         file_obj = self._original_open(*args, **kwargs)
@@ -91,25 +99,50 @@ class FdTracker:
         file_obj.close = patched_file_close
         return file_obj
 
+    def _patched_io_open(self, *args, **kwargs):
+        file_obj = self._original_io_open(*args, **kwargs)
+        fd = self._create_fd(file_obj)
+        file_close = file_obj.close
+
+        def patched_io_close(*args, **kwargs):
+            result = file_close(*args, **kwargs)
+            self._close_fd(fd)
+            return result
+
+        file_obj.close = patched_io_close
+        return file_obj
+
     def _patched_init(self, *args, **kwargs):
         result = self._original_init(*args, **kwargs)
         subject = _get_subject(args, kwargs)
         self._create_fd(subject)
         return result
-
+    
     def _patched_close(self, *args, **kwargs):
         result = self._original_close(*args, **kwargs)
         subject = _get_subject(args, kwargs)
         id_ = id(subject)
         self._close_fd(id_)
         return result
-
+    
     def _patched_detach(self, *args, **kwargs):
         result = self._original_detach(*args, **kwargs)
         subject = _get_subject(args, kwargs)
         id_ = id(subject)
         self._close_fd(id_)
         return result
+
+    def _create_fd(self, file_obj) -> int:
+        fd = Fd(file_obj, tb.format_stack())
+        id_ = id(file_obj)
+        self.short_term_store[id_] = fd
+        return id_
+
+    def _close_fd(self, id_: int):
+        self.short_term_store.pop(id_, None)
+        stored_id = self._id_mapping.pop(id_, None)
+        if stored_id:
+            self.long_term_store.delete(stored_id)
 
     def _process_fd_for_long_term(self, fd: Fd):
         id_ = id(fd.subject)
