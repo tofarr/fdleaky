@@ -26,11 +26,11 @@ class FdTracker:
     sleep_interval: int = 5
     is_open: bool = False
     _id_mapping: dict[int, str] = field(default_factory=dict)
-    _original_open: callable | None = None
-    _original_init: callable | None = None
-    _original_close: callable | None = None
-    _original_detach: callable | None = None
-    _worker: Thread | None = None
+    _original_open: callable = None
+    _original_init: callable = None
+    _original_close: callable = None
+    _original_detach: callable = None
+    _worker: Thread = None
 
     def __enter__(self):
         self.start()
