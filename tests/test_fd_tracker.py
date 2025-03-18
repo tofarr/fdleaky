@@ -201,7 +201,7 @@ class TestFdTracker:
         sock = MagicMock()
 
         # Act
-        with patch('fdleaky.fd_tracker.Thread', MagicMock()) as mock:
+        with patch("fdleaky.fd_tracker.Thread", MagicMock()) as mock:
             self.tracker.start()
             mock.return_value.start.assert_called_once()
 
@@ -351,11 +351,11 @@ class TestFdTracker:
 
         # Override the loop so that the value only appears once.
         original_process_fd_for_long_term = self.tracker._process_fd_for_long_term
-        
+
         def override_process_fd_for_long_term(fd: Fd):
             self.tracker.is_open = False
             return original_process_fd_for_long_term(fd)
-        
+
         self.tracker._process_fd_for_long_term = override_process_fd_for_long_term
         self.tracker.is_open = True
         self.tracker._do_long_term_store()
