@@ -10,7 +10,7 @@ class FdInfo:
     open for some time.
     """
 
-    id: str = field(default_factory=uuid4)
     identifier: str
     stack: list[str]
     created_at: datetime
+    id: str = field(default_factory=lambda: str(uuid4()))
