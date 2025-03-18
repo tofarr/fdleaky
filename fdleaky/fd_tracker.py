@@ -59,7 +59,7 @@ class FdTracker:
 
         def _patched_init(*args, **kwargs):
             return self._patched_init(*args, **kwargs)
-        
+
         def _patched_close(*args, **kwargs):
             return self._patched_close(*args, **kwargs)
 
@@ -84,7 +84,6 @@ class FdTracker:
         socket.socket.detach = self._original_detach
         self.is_open = False
         self._worker.join()
-
 
     def _patched_open(self, *args, **kwargs):
         file_obj = self._original_open(*args, **kwargs)
@@ -117,14 +116,14 @@ class FdTracker:
         subject = _get_subject(args, kwargs)
         self._create_fd(subject)
         return result
-    
+
     def _patched_close(self, *args, **kwargs):
         result = self._original_close(*args, **kwargs)
         subject = _get_subject(args, kwargs)
         id_ = id(subject)
         self._close_fd(id_)
         return result
-    
+
     def _patched_detach(self, *args, **kwargs):
         result = self._original_detach(*args, **kwargs)
         subject = _get_subject(args, kwargs)

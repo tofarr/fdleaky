@@ -1,5 +1,3 @@
-
-
 import random
 import socketserver
 from tempfile import NamedTemporaryFile
@@ -23,6 +21,7 @@ def test_open():
         assert len(tracker.short_term_store) == 0
     temp_file.close()
 
+
 def test_temp():
     with FdTracker() as tracker:
         with NamedTemporaryFile(delete=True, delete_on_close=True) as temp_file:
@@ -31,8 +30,9 @@ def test_temp():
             fd = next(iter(tracker.short_term_store.values()))
             assert fd.created_at > time.time() - 5
             assert fd.stack is not None
-            assert fd.subject is not None  
+            assert fd.subject is not None
         assert len(tracker.short_term_store) == 0
+
 
 def test_http():
     port = random.randint(30000, 31000)
@@ -42,10 +42,12 @@ def test_http():
             # Create and start a simple server
             def run_server():
                 nonlocal httpd
-                with socketserver.TCPServer(("", port), SimpleHTTPRequestHandler) as http_daemon:
+                with socketserver.TCPServer(
+                    ("", port), SimpleHTTPRequestHandler
+                ) as http_daemon:
                     httpd = http_daemon
                     httpd.serve_forever()
-            
+
             thread = Thread(target=run_server, daemon=True)
             thread.start()
 
@@ -66,4 +68,4 @@ def test_http():
             if httpd:
                 httpd.shutdown()
                 thread.join()
-            assert len(tracker.short_term_store) == 0 
+            assert len(tracker.short_term_store) == 0
