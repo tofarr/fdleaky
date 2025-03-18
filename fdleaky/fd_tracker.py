@@ -11,6 +11,7 @@ from fdleaky.fd_info_factory import FdInfoFactory
 from fdleaky.fd_info_store import FdInfoStore
 
 
+# pylint: disable=R0902
 @dataclass
 class FdTracker:
     """
