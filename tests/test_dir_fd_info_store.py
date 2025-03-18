@@ -18,13 +18,13 @@ class TestDirFdInfoStore:
         """Set up test fixtures before each test method."""
         self.store = DirFdInfoStore(dir=Path("/test/dir"))
         self.test_id = "test-uuid"
-        
+
         # Create FdInfo with required parameters
         self.test_fd_info = FdInfo(
             identifier="test-identifier",
             stack=["line1", "line2", "line3"],
             created_at=datetime.datetime(2023, 1, 1, 12, 0, 0),
-            id=self.test_id
+            id=self.test_id,
         )
 
     def test_init_default_dir(self):
@@ -47,10 +47,8 @@ class TestDirFdInfoStore:
 
         # Assert
         expected_path = Path("/test/dir") / f"{self.test_id}.json"
-        mock_file.assert_called_once_with(
-            expected_path, mode="w", encoding="utf-8"
-        )
-        
+        mock_file.assert_called_once_with(expected_path, mode="w", encoding="utf-8")
+
         # Check that json.dump was called with the correct arguments
         # The first argument should be the dict representation of fd_info with created_at as string
         expected_data = {
@@ -59,10 +57,10 @@ class TestDirFdInfoStore:
             "stack": ["line1", "line2", "line3"],
             "created_at": str(self.test_fd_info.created_at),
         }
-        
+
         # Get the actual first argument passed to json.dump
         actual_data = mock_json_dump.call_args[0][0]
-        
+
         # Check that the keys match
         assert set(actual_data.keys()) == set(expected_data.keys())
         assert actual_data["id"] == expected_data["id"]
@@ -70,10 +68,10 @@ class TestDirFdInfoStore:
         assert actual_data["stack"] == expected_data["stack"]
         # The created_at is converted to string in the method
         assert isinstance(actual_data["created_at"], str)
-        
+
         # Check that the file handle was passed as the second argument
         assert mock_json_dump.call_args[0][1] == mock_file()
-        
+
         # Check that indent=2 was passed as a keyword argument
         assert mock_json_dump.call_args[1]["indent"] == 2
 
@@ -81,14 +79,16 @@ class TestDirFdInfoStore:
     @patch("builtins.open", new_callable=mock_open)
     @patch("json.dump")
     @patch("os.makedirs")
-    def test_create_ensures_directory_exists(self, mock_makedirs, mock_json_dump, mock_file, mock_exists):
+    def test_create_ensures_directory_exists(
+        self, mock_makedirs, mock_json_dump, mock_file, mock_exists
+    ):
         """Test that create ensures the directory exists before writing the file."""
         # Arrange
         mock_exists.return_value = False
-        
+
         # Act
         self.store.create(self.test_fd_info)
-        
+
         # Assert
         # This test is checking if the code would create the directory if it doesn't exist
         # Since the current implementation doesn't do this, this test would fail
@@ -130,5 +130,5 @@ class TestDirFdInfoStore:
         # Act/Assert
         with pytest.raises(PermissionError):
             self.store.delete(self.test_id)
-        
+
         mock_unlink.assert_called_once_with()

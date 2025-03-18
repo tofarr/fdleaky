@@ -111,15 +111,18 @@ class FdTracker:
         self._close_fd(id_)
         return result
 
+    def _process_fd_for_long_term(self, fd: Fd):
+        id_ = id(fd.subject)
+        if id_ not in self._id_mapping:
+            fd_info = self.fd_info_factory.create_fd_info(fd)
+            if fd_info:
+                self.long_term_store.create(fd_info)
+                self._id_mapping[id_] = fd_info.id
+
     def _do_long_term_store(self):
         while self.is_open:
             for fd in list(self.short_term_store.values()):
-                id_ = id(fd.subject)
-                if id_ not in self._id_mapping:
-                    fd_info = self.fd_info_factory.create_fd_info(fd)
-                    if fd_info:
-                        self.long_term_store.create(fd_info)
-                        self._id_mapping[id_] = fd_info.id
+                self._process_fd_for_long_term(fd)
 
 
 def _get_subject(args, kwargs):
