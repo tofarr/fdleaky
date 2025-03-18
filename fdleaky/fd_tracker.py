@@ -59,7 +59,7 @@ class FdTracker:
     def close(self):
         if not self.is_open:
             return
-        builtins.open = self._patched_open # pylint: disable=W0622
+        builtins.open = self._patched_open  # pylint: disable=W0622
         socket.socket.__init__ = self._original_init
         socket.socket.close = self._original_close
         socket.socket.detach = self._original_detach
