@@ -47,7 +47,7 @@ class FdTracker:
         self._original_init = socket.socket.__init__
         self._original_close = socket.socket.close
         self._original_detach = socket.socket.detach
-        builtins.open = self._patched_open
+        builtins.open = self._patched_open  # type: ignore
         _io.open = self._patched_open  # Also patch _io.open for tempfile module
         socket.socket.__init__ = self._patched_init  # type: ignore
         socket.socket.close = self._patched_close  # type: ignore
